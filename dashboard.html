@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeFi Arbitrage Bot - Portfolio Dashboard</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- Our Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 DeFi Arbitrage Bot</h1>
+            <div class="bot-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Bot Status</span>
+            </div>
+            <!-- Ersetze nur den Controls-Bereich in deiner dashboard.html -->
+
+            <!-- Enhanced Controls mit Portfolio Input -->
+            <div class="controls">
+                <div class="control-row">
+                    <button class="btn btn-primary" id="startBtn">▶️ Start Bot</button>
+                    <button class="btn btn-secondary" id="stopBtn">⏸️ Stop Bot</button>
+                    <button class="btn btn-secondary" id="resetBtn">🔄 Reset Stats</button>
+                    <button class="btn btn-accent" id="portfolioBtn">💼 Portfolio Report</button>
+                </div>
+
+                <div class="control-row portfolio-input-row">
+                    <div class="portfolio-input-group">
+                        <label for="portfolioInput" class="portfolio-input-label">💰 Startkapital:</label>
+                        <div class="portfolio-input-container">
+                            <span class="currency-symbol">$</span>
+                            <input 
+                                type="number" 
+                                id="portfolioInput" 
+                                class="portfolio-input" 
+                                value="100" 
+                                min="10" 
+                                max="1000000" 
+                                step="1000"
+                                placeholder="10000"
+                            />
+                            <button class="btn btn-update" id="updatePortfolioBtn">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-quick-buttons">
+                        <button class="btn btn-quick" data-amount="5000">$5K</button>
+                        <button class="btn btn-quick" data-amount="10000">$10K</button>
+                        <button class="btn btn-quick" data-amount="25000">$25K</button>
+                        <button class="btn btn-quick" data-amount="50000">$50K</button>
+                        <button class="btn btn-quick" data-amount="100000">$100K</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Overview -->
+        <div class="portfolio-overview">
+            <div class="portfolio-header">
+                <h2>💰 Portfolio Overview</h2>
+                <div class="portfolio-controls">
+                    <select id="portfolioTimeframe" class="timeframe-select">
+                        <option value="24h">24 Hours</option>
+                        <option value="7d" selected>7 Days</option>
+                        <option value="30d">30 Days</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="portfolio-stats-grid">
+                <div class="portfolio-card main-balance">
+                    <div class="portfolio-title">Total Portfolio Value</div>
+                    <div class="portfolio-value" id="totalPortfolioValue">$10,000.00</div>
+                    <div class="portfolio-change" id="totalPortfolioChange">
+                        <span class="change-indicator">+0.00%</span>
+                        <span class="change-amount">+$0.00</span>
+                    </div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-title">Today's P&L</div>
+                    <div class="portfolio-value" id="todayPnL">$0.00</div>
+                    <div class="portfolio-subtitle">Daily Performance</div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-title">Win Rate</div>
+                    <div class="portfolio-value" id="portfolioWinRate">0%</div>
+                    <div class="portfolio-subtitle" id="portfolioTradeCount">0 trades</div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-title">Sharpe Ratio</div>
+                    <div class="portfolio-value" id="sharpeRatio">0.00</div>
+                    <div class="portfolio-subtitle">Risk-adjusted return</div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-title">Max Drawdown</div>
+                    <div class="portfolio-value" id="maxDrawdown">0.00%</div>
+                    <div class="portfolio-subtitle">Worst decline</div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-title">Available Cash</div>
+                    <div class="portfolio-value" id="availableCash">$10,000.00</div>
+                    <div class="portfolio-subtitle">Ready to trade</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Status (bestehend) -->
+        <div id="marketStatus" class="market-status-card">
+            <div class="market-status-title">📊 Live Marktdaten</div>
+            <div class="market-status-grid">
+                <div class="market-stat">
+                    <div class="market-stat-label">Status</div>
+                    <div id="marketStatusValue" class="market-stat-value">Loading...</div>
+                </div>
+                <div class="market-stat">
+                    <div class="market-stat-label">Datenquelle</div>
+                    <div id="marketSourceValue" class="market-stat-value">-</div>
+                </div>
+                <div class="market-stat">
+                    <div class="market-stat-label">Letztes Update</div>
+                    <div id="marketUpdateValue" class="market-stat-value">-</div>
+                </div>
+                <div class="market-stat">
+                    <div class="market-stat-label">Avg. 24h Change</div>
+                    <div id="marketChangeValue" class="market-stat-value">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Charts mit Portfolio -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">📈 Portfolio Performance</div>
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">💰 Daily P&L</div>
+                <canvas id="pnlChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🥧 Portfolio Allocation</div>
+                <canvas id="allocationChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📊 Trade Distribution</div>
+                <canvas id="tradeDistributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Current Opportunities (bestehend) -->
+        <div class="opportunities-section">
+            <div class="opportunities-title">💰 Current Arbitrage Opportunities</div>
+            <div id="opportunitiesList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Positions -->
+        <div class="positions-section">
+            <div class="section-title">📊 Current Positions</div>
+            <div class="positions-grid" id="positionsGrid">
+                <!-- Dynamically filled -->
+            </div>
+        </div>
+
+        <!-- Recent Trades Table -->
+        <div class="trades-table-section">
+            <div class="section-title">📝 Recent Portfolio Trades</div>
+            <div class="trades-table-container">
+                <table class="trades-table" id="tradesTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Pair</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>P&L</th>
+                            <th>Portfolio Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesTableBody">
+                        <!-- Dynamically filled -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Trade Log (kompakter) -->
+        <div class="trades-log compact">
+            <div class="log-title">📝 System Log</div>
+            <div id="tradeLog">
+                <div class="log-entry log-info">
+                    <div class="log-time">System initialized</div>
+                    <div>🤖 Bot ready for portfolio trading. Starting balance: $10,000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Report Modal -->
+        <div id="portfolioModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📊 Portfolio Performance Report</h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body" id="portfolioReportContent">
+                    <!-- Dynamically filled -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>DeFi Arbitrage Bot Portfolio Dashboard | Built with ❤️ for BNB Smart Chain</p>
+        </div>
+    </div>
+
+    <!-- Our JavaScript -->
+    <script src="portfolio.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
